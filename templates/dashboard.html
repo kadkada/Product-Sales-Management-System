@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}仪表板 - 商品销售管理系统{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in-up">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">仪表板</h1>
+            <p class="page-subtitle">实时监控销售数据和系统状态</p>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary" onclick="refreshDashboard()">
+                <i class="fas fa-sync-alt me-2"></i>刷新数据
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 统计卡片 -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card fade-in-up">
+            <div class="stats-icon bg-primary text-white">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <h3 class="stats-value" id="todaySales">¥0</h3>
+            <p class="stats-label">今日销售额</p>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card fade-in-up">
+            <div class="stats-icon bg-success text-white">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <h3 class="stats-value" id="todayOrders">0</h3>
+            <p class="stats-label">今日订单数</p>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card fade-in-up">
+            <div class="stats-icon bg-info text-white">
+                <i class="fas fa-box"></i>
+            </div>
+            <h3 class="stats-value" id="totalGoods">0</h3>
+            <p class="stats-label">商品总数</p>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card fade-in-up">
+            <div class="stats-icon bg-warning text-white">
+                <i class="fas fa-comments"></i>
+            </div>
+            <h3 class="stats-value" id="unreadMessages">0</h3>
+            <p class="stats-label">未回复留言</p>
+        </div>
+    </div>
+</div>
+
+<!-- 图表区域 -->
+<div class="row">
+    <div class="col-xl-8 col-lg-7">
+        <div class="card fade-in-up">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold text-primary">
+                        <i class="fas fa-chart-line me-2"></i>销售趋势
+                    </h6>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-calendar-alt me-1"></i>时间范围
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="changeChartPeriod('7')">最近7天</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="changeChartPeriod('30')">最近30天</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="changeChartPeriod('90')">最近90天</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-4 col-lg-5">
+        <div class="card fade-in-up">
+            <div class="card-header">
+                <h6 class="mb-0 fw-bold text-primary">
+                    <i class="fas fa-chart-pie me-2"></i>商品种类销售占比
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-pie pt-4 pb-2">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 最近订单 -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card fade-in-up">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold text-primary">
+                        <i class="fas fa-receipt me-2"></i>最近订单
+                    </h6>
+                    <a href="/orders" class="btn btn-sm btn-primary">
+                        <i class="fas fa-external-link-alt me-1"></i>查看全部
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="recentOrdersTable">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag me-1"></i>订单号</th>
+                                <th><i class="fas fa-user me-1"></i>客户</th>
+                                <th><i class="fas fa-dollar-sign me-1"></i>金额</th>
+                                <th><i class="fas fa-info-circle me-1"></i>状态</th>
+                                <th><i class="fas fa-clock me-1"></i>下单时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="5" class="text-center">加载中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+}
+.border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+}
+.border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+}
+.border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+}
+.text-xs {
+    font-size: 0.7rem;
+}
+.text-gray-300 {
+    color: #dddfeb !important;
+}
+.text-gray-800 {
+    color: #5a5c69 !important;
+}
+.chart-area {
+    position: relative;
+    height: 10rem;
+    width: 100%;
+}
+.chart-pie {
+    position: relative;
+    height: 15rem;
+    width: 100%;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let salesChart, categoryChart;
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
+    initCharts();
+});
+
+// 加载仪表板数据
+function loadDashboardData() {
+    // 加载今日销售数据
+    apiRequest('/statistics/sales?period=today')
+        .then(response => {
+            if (response.code === 1) {
+                const stats = response.data.overall_stats;
+                if (stats) {
+                    document.getElementById('todaySales').textContent = '¥' + (stats.total_sales || 0).toFixed(2);
+                    document.getElementById('todayOrders').textContent = stats.total_orders || 0;
+                } else {
+                    document.getElementById('todaySales').textContent = '¥0.00';
+                    document.getElementById('todayOrders').textContent = '0';
+                }
+            } else {
+                console.error('获取销售数据失败:', response.msg);
+                document.getElementById('todaySales').textContent = '¥0.00';
+                document.getElementById('todayOrders').textContent = '0';
+            }
+        })
+        .catch(error => {
+            console.error('API请求失败:', error);
+            document.getElementById('todaySales').textContent = '¥0.00';
+            document.getElementById('todayOrders').textContent = '0';
+        });
+    
+    // 加载商品总数
+    apiRequest('/goods/list?page_size=1')
+        .then(response => {
+            if (response.code === 1) {
+                document.getElementById('totalGoods').textContent = response.data.total;
+            }
+        });
+    
+    // 加载未回复留言数
+    apiRequest('/message/stats')
+        .then(response => {
+            if (response.code === 1) {
+                document.getElementById('unreadMessages').textContent = response.data.unread_count;
+            }
+        });
+    
+    // 加载最近订单
+    loadRecentOrders();
+}
+
+// 加载最近订单
+function loadRecentOrders() {
+    apiRequest('/order/list?page_size=5')
+        .then(response => {
+            if (response.code === 1) {
+                const tbody = document.querySelector('#recentOrdersTable tbody');
+                if (response.data.list.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">暂无订单</td></tr>';
+                } else {
+                    tbody.innerHTML = response.data.list.map(order => `
+                        <tr>
+                            <td>${order.order_id}</td>
+                            <td>${order.real_name || order.username}</td>
+                            <td>¥${order.total_amount}</td>
+                            <td><span class="badge bg-${getStatusColor(order.status)}">${getStatusText(order.status)}</span></td>
+                            <td>${new Date(order.create_time).toLocaleString()}</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+        });
+}
+
+// 获取状态颜色
+function getStatusColor(status) {
+    const colors = {
+        'pending': 'warning',
+        'shipped': 'info',
+        'completed': 'success',
+        'cancelled': 'danger'
+    };
+    return colors[status] || 'secondary';
+}
+
+// 获取状态文本
+function getStatusText(status) {
+    const texts = {
+        'pending': '待发货',
+        'shipped': '已发货',
+        'completed': '已完成',
+        'cancelled': '已取消'
+    };
+    return texts[status] || status;
+}
+
+// 初始化图表
+function initCharts() {
+    // 销售趋势图
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    salesChart = new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: '销售额（元）',
+                data: [],
+                borderColor: 'rgb(79, 70, 229)',
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '销售额: ¥' + context.parsed.y.toFixed(2);
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: '日期'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '销售额（元）'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '¥' + value.toFixed(0);
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 商品种类占比图
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    categoryChart = new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [],
+            datasets: [{
+                label: '销售占比',
+                data: [],
+                backgroundColor: [
+                    '#4F46E5',  // 紫色
+                    '#10B981',  // 绿色
+                    '#F59E0B',  // 黄色
+                    '#EF4444',  // 红色
+                    '#3B82F6',  // 蓝色
+                    '#8B5CF6',  // 紫色
+                    '#06B6D4',  // 青色
+                    '#84CC16'   // 绿色
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return label + ': ¥' + value.toFixed(2) + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 加载图表数据
+    loadChartData();
+}
+
+// 加载图表数据
+function loadChartData() {
+    // 加载销售趋势数据
+    apiRequest('/statistics/sales?period=7days')
+        .then(response => {
+            if (response.code === 1) {
+                const trends = response.data.daily_trends;
+                const labels = trends.map(t => t.sale_date);
+                const data = trends.map(t => t.daily_sales);
+                
+                salesChart.data.labels = labels;
+                salesChart.data.datasets[0].data = data;
+                salesChart.update();
+            }
+        });
+    
+    // 加载商品种类数据
+    apiRequest('/statistics/sales?period=7days')
+        .then(response => {
+            if (response.code === 1) {
+                const categories = response.data.category_stats.slice(0, 6);
+                const labels = categories.map(c => c.category_name);
+                const data = categories.map(c => c.total_sales);
+                
+                categoryChart.data.labels = labels;
+                categoryChart.data.datasets[0].data = data;
+                categoryChart.update();
+            }
+        });
+}
+
+// 刷新仪表板
+function refreshDashboard() {
+    loadDashboardData();
+    loadChartData();
+    showMessage('数据已刷新', 'success');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,479 @@
+{% extends "base.html" %}
+
+{% block title %}销售统计 - 商品销售管理系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">销售统计</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshStatistics()">
+                <i class="fas fa-sync-alt me-1"></i>刷新
+            </button>
+        </div>
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-success" onclick="exportData()">
+                <i class="fas fa-download me-1"></i>导出数据
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 时间筛选 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <label for="periodSelect" class="form-label">时间范围</label>
+                <select class="form-select" id="periodSelect" onchange="onPeriodChange()">
+                    <option value="7days">最近7天</option>
+                    <option value="month">本月</option>
+                    <option value="custom">自定义</option>
+                </select>
+            </div>
+            <div class="col-md-3" id="startDateGroup" style="display: none;">
+                <label for="startDate" class="form-label">开始日期</label>
+                <input type="date" class="form-control" id="startDate">
+            </div>
+            <div class="col-md-3" id="endDateGroup" style="display: none;">
+                <label for="endDate" class="form-label">结束日期</label>
+                <input type="date" class="form-control" id="endDate">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="button" class="btn btn-primary" onclick="loadStatistics()">
+                        <i class="fas fa-search me-1"></i>查询
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 总体统计 -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">总销售额</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalSales">¥0</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">总订单数</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalOrders">0</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">平均客单价</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="avgOrderValue">¥0</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">客户数</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="uniqueCustomers">0</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 图表区域 -->
+<div class="row">
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">销售趋势</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="salesTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">商品种类销售占比</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-pie pt-4 pb-2">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 商品种类统计表格 -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">商品种类销售统计</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>商品种类</th>
+                                <th>销量</th>
+                                <th>销售额</th>
+                                <th>订单数</th>
+                                <th>占比</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoryStatsTable">
+                            <tr>
+                                <td colspan="5" class="text-center">加载中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 热销商品排行 -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">热销商品排行</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>商品名称</th>
+                                <th>商品种类</th>
+                                <th>销量</th>
+                                <th>销售额</th>
+                                <th>订单数</th>
+                                <th>平均价格</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topGoodsTable">
+                            <tr>
+                                <td colspan="7" class="text-center">加载中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+}
+.border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+}
+.border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+}
+.border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+}
+.text-xs {
+    font-size: 0.7rem;
+}
+.text-gray-300 {
+    color: #dddfeb !important;
+}
+.text-gray-800 {
+    color: #5a5c69 !important;
+}
+.chart-area {
+    position: relative;
+    height: 10rem;
+    width: 100%;
+}
+.chart-pie {
+    position: relative;
+    height: 15rem;
+    width: 100%;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let salesTrendChart, categoryChart;
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    initCharts();
+    loadStatistics();
+});
+
+// 初始化图表
+function initCharts() {
+    // 销售趋势图
+    const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
+    salesTrendChart = new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: '销售额',
+                data: [],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // 商品种类占比图
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    categoryChart = new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF',
+                    '#FF9F40'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+// 时间范围变化处理
+function onPeriodChange() {
+    const period = document.getElementById('periodSelect').value;
+    const startDateGroup = document.getElementById('startDateGroup');
+    const endDateGroup = document.getElementById('endDateGroup');
+    
+    if (period === 'custom') {
+        startDateGroup.style.display = 'block';
+        endDateGroup.style.display = 'block';
+    } else {
+        startDateGroup.style.display = 'none';
+        endDateGroup.style.display = 'none';
+    }
+}
+
+// 加载统计数据
+function loadStatistics() {
+    const period = document.getElementById('periodSelect').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    let url = `/statistics/sales?period=${period}`;
+    if (period === 'custom' && startDate && endDate) {
+        url += `&start_date=${startDate}&end_date=${endDate}`;
+    }
+    
+    apiRequest(url)
+        .then(response => {
+            if (response.code === 1) {
+                updateOverallStats(response.data.overall_stats);
+                updateSalesTrend(response.data.daily_trends);
+                updateCategoryStats(response.data.category_stats);
+            } else {
+                showMessage(response.msg, 'danger');
+            }
+        });
+    
+    // 加载热销商品
+    loadTopGoods();
+}
+
+// 更新总体统计
+function updateOverallStats(stats) {
+    document.getElementById('totalSales').textContent = '¥' + (stats.total_sales || 0).toFixed(2);
+    document.getElementById('totalOrders').textContent = stats.total_orders || 0;
+    document.getElementById('avgOrderValue').textContent = '¥' + (stats.avg_order_value || 0).toFixed(2);
+    document.getElementById('uniqueCustomers').textContent = stats.unique_customers || 0;
+}
+
+// 更新销售趋势图
+function updateSalesTrend(trends) {
+    const labels = trends.map(t => t.sale_date);
+    const data = trends.map(t => t.daily_sales);
+    
+    salesTrendChart.data.labels = labels;
+    salesTrendChart.data.datasets[0].data = data;
+    salesTrendChart.update();
+}
+
+// 更新商品种类统计
+function updateCategoryStats(categories) {
+    // 更新饼图
+    const labels = categories.slice(0, 6).map(c => c.category_name);
+    const data = categories.slice(0, 6).map(c => c.total_sales);
+    
+    categoryChart.data.labels = labels;
+    categoryChart.data.datasets[0].data = data;
+    categoryChart.update();
+    
+    // 更新表格
+    const tbody = document.getElementById('categoryStatsTable');
+    const totalSales = categories.reduce((sum, c) => sum + parseFloat(c.total_sales), 0);
+    
+    tbody.innerHTML = categories.map(category => {
+        const percentage = totalSales > 0 ? (category.total_sales / totalSales * 100).toFixed(1) : 0;
+        return `
+            <tr>
+                <td>${category.category_name}</td>
+                <td>${category.total_quantity}</td>
+                <td>¥${category.total_sales}</td>
+                <td>${category.order_count}</td>
+                <td>${percentage}%</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// 加载热销商品
+function loadTopGoods() {
+    const period = document.getElementById('periodSelect').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    let url = `/statistics/top-goods?limit=10&period=${period}`;
+    if (period === 'custom' && startDate && endDate) {
+        url += `&start_date=${startDate}&end_date=${endDate}`;
+    }
+    
+    apiRequest(url)
+        .then(response => {
+            if (response.code === 1) {
+                updateTopGoodsTable(response.data);
+            }
+        });
+}
+
+// 更新热销商品表格
+function updateTopGoodsTable(goods) {
+    const tbody = document.getElementById('topGoodsTable');
+    
+    if (goods.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">暂无数据</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = goods.map((goods, index) => `
+        <tr>
+            <td>${index + 1}</td>
+            <td>${goods.goods_name}</td>
+            <td>${goods.category_name}</td>
+            <td>${goods.total_quantity}</td>
+            <td>¥${goods.total_sales}</td>
+            <td>${goods.order_count}</td>
+            <td>¥${goods.avg_price}</td>
+        </tr>
+    `).join('');
+}
+
+// 刷新统计
+function refreshStatistics() {
+    loadStatistics();
+    showMessage('统计数据已刷新', 'success');
+}
+
+// 导出数据
+function exportData() {
+    const period = document.getElementById('periodSelect').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    let url = `/statistics/export?type=orders&period=${period}`;
+    if (period === 'custom' && startDate && endDate) {
+        url += `&start_date=${startDate}&end_date=${endDate}`;
+    }
+    
+    apiRequest(url)
+        .then(response => {
+            if (response.code === 1) {
+                // 创建下载链接
+                const blob = new Blob([response.data.csv_content], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = window.URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', response.data.filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showMessage('数据导出成功', 'success');
+            } else {
+                showMessage(response.msg, 'danger');
+            }
+        });
+}
+</script>
+{% endblock %}

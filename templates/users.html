@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}用户管理 - 商品销售管理系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">用户管理</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshUsers()">
+                <i class="fas fa-sync-alt me-1"></i>刷新
+            </button>
+        </div>
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-primary" onclick="showAddUserModal()">
+                <i class="fas fa-plus me-1"></i>添加用户
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 筛选条件 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <label for="keywordFilter" class="form-label">搜索用户</label>
+                <input type="text" class="form-control" id="keywordFilter" placeholder="用户名或姓名">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="button" class="btn btn-primary" onclick="filterUsers()">
+                        <i class="fas fa-search me-1"></i>搜索
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 用户列表 -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>用户名</th>
+                        <th>真实姓名</th>
+                        <th>角色</th>
+                        <th>电话</th>
+                        <th>邮箱</th>
+                        <th>状态</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <tr>
+                        <td colspan="8" class="text-center">加载中...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 分页 -->
+        <nav aria-label="用户分页">
+            <ul class="pagination justify-content-center" id="usersPagination">
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- 添加用户模态框 -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">添加用户</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">用户名</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">密码</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="realName" class="form-label">真实姓名</label>
+                        <input type="text" class="form-control" id="realName">
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">角色</label>
+                        <select class="form-select" id="role" required>
+                            <option value="normal">普通用户</option>
+                            <option value="admin">管理员</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">电话</label>
+                        <input type="tel" class="form-control" id="phone">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">邮箱</label>
+                        <input type="email" class="form-control" id="email">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submitUser()">添加</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 1;
+let pageSize = 10;
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    loadUsers();
+});
+
+// 加载用户列表
+function loadUsers() {
+    const keyword = document.getElementById('keywordFilter').value;
+    
+    let url = `/user/list?page=${currentPage}&page_size=${pageSize}`;
+    if (keyword) url += `&keyword=${keyword}`;
+    
+    apiRequest(url)
+        .then(response => {
+            if (response.code === 1) {
+                renderUsersTable(response.data.list);
+                renderPagination(response.data.total, response.data.page, response.data.page_size);
+            } else {
+                showMessage(response.msg, 'danger');
+            }
+        });
+}
+
+// 渲染用户表格
+function renderUsersTable(users) {
+    const tbody = document.getElementById('usersTableBody');
+    
+    if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">暂无用户</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = users.map(user => `
+        <tr>
+            <td>${user.username}</td>
+            <td>${user.real_name || '-'}</td>
+            <td><span class="badge bg-${user.role === 'admin' ? 'danger' : 'primary'}">${user.role === 'admin' ? '管理员' : '普通用户'}</span></td>
+            <td>${user.phone || '-'}</td>
+            <td>${user.email || '-'}</td>
+            <td><span class="badge bg-${user.status == 1 ? 'success' : 'secondary'}">${user.status == 1 ? '启用' : '禁用'}</span></td>
+            <td>${new Date(user.create_time).toLocaleDateString()}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-warning me-1" onclick="toggleUserStatus(${user.user_id}, ${user.status}, '${user.username}')">
+                    <i class="fas fa-${user.status == 1 ? 'ban' : 'check'}"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.user_id}, '${user.username}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// 渲染分页
+function renderPagination(total, page, pageSize) {
+    const pagination = document.getElementById('usersPagination');
+    const totalPages = Math.ceil(total / pageSize);
+    
+    if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+    }
+    
+    let html = '';
+    
+    // 上一页
+    if (page > 1) {
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage(${page - 1})">上一页</a></li>`;
+    }
+    
+    // 页码
+    for (let i = Math.max(1, page - 2); i <= Math.min(totalPages, page + 2); i++) {
+        html += `<li class="page-item ${i === page ? 'active' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+        </li>`;
+    }
+    
+    // 下一页
+    if (page < totalPages) {
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage(${page + 1})">下一页</a></li>`;
+    }
+    
+    pagination.innerHTML = html;
+}
+
+// 切换页面
+function changePage(page) {
+    currentPage = page;
+    loadUsers();
+}
+
+// 筛选用户
+function filterUsers() {
+    currentPage = 1;
+    loadUsers();
+}
+
+// 显示添加用户模态框
+function showAddUserModal() {
+    document.getElementById('addUserForm').reset();
+    
+    const modal = new bootstrap.Modal(document.getElementById('addUserModal'));
+    modal.show();
+}
+
+// 提交用户
+function submitUser() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const realName = document.getElementById('realName').value.trim();
+    const role = document.getElementById('role').value;
+    const phone = document.getElementById('phone').value.trim();
+    const email = document.getElementById('email').value.trim();
+    
+    if (!username || !password) {
+        showMessage('用户名和密码不能为空', 'warning');
+        return;
+    }
+    
+    const submitBtn = document.querySelector('#addUserModal .btn-primary');
+    const originalText = submitBtn.innerHTML;
+    showLoading(submitBtn);
+    
+    apiRequest('/user/add', 'POST', {
+        username: username,
+        password: password,
+        real_name: realName,
+        role: role,
+        phone: phone,
+        email: email
+    })
+        .then(response => {
+            hideLoading(submitBtn, originalText);
+            
+            if (response.code === 1) {
+                showMessage('用户添加成功', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+                loadUsers();
+            } else {
+                showMessage(response.msg, 'danger');
+            }
+        });
+}
+
+// 切换用户状态
+function toggleUserStatus(userId, currentStatus, username) {
+    const newStatus = currentStatus == 1 ? 0 : 1;
+    const action = newStatus == 1 ? '启用' : '禁用';
+    
+    if (confirm(`确定要${action}用户"${username}"吗？`)) {
+        apiRequest('/user/update-status', 'POST', {
+            user_id: userId,
+            status: newStatus
+        })
+            .then(response => {
+                if (response.code === 1) {
+                    showMessage(`用户${action}成功`, 'success');
+                    loadUsers();
+                } else {
+                    showMessage(response.msg, 'danger');
+                }
+            });
+    }
+}
+
+// 删除用户
+function deleteUser(userId, username) {
+    if (confirm(`确定要删除用户"${username}"吗？此操作不可恢复！`)) {
+        apiRequest('/user/delete', 'POST', {
+            user_id: userId
+        })
+            .then(response => {
+                if (response.code === 1) {
+                    showMessage('用户删除成功', 'success');
+                    loadUsers();
+                } else {
+                    showMessage(response.msg, 'danger');
+                }
+            });
+    }
+}
+
+// 刷新用户
+function refreshUsers() {
+    loadUsers();
+    showMessage('用户列表已刷新', 'success');
+}
+</script>
+{% endblock %}
