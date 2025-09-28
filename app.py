@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session, render_template
+from flask import Flask, request, jsonify, session, render_template, redirect, url_for
 from flask_cors import CORS
 import pymysql
 import hashlib
@@ -31,7 +31,12 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            return jsonify({"code": 0, "msg": "请先登录"})
+            # 如果是API请求，返回JSON
+            if request.path.startswith('/api/'):
+                return jsonify({"code": 0, "msg": "请先登录"})
+            # 如果是页面请求，重定向到登录页
+            else:
+                return redirect(url_for('login_page'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -522,47 +527,62 @@ def login_page():
     """登录页"""
     return render_template('login.html')
 
+@app.route('/logout')
+def logout():
+    """登出"""
+    session.clear()
+    return redirect(url_for('index'))
+
 @app.route('/dashboard')
+@login_required
 def dashboard():
     """仪表板"""
     return render_template('dashboard.html')
 
 @app.route('/users')
+@login_required
 def users_page():
     """用户管理页"""
     return render_template('users.html')
 
 @app.route('/categories')
+@login_required
 def categories_page():
     """商品种类管理页"""
     return render_template('categories.html')
 
 @app.route('/goods')
+@login_required
 def goods_page():
     """商品管理页"""
     return render_template('goods.html')
 
 @app.route('/orders')
+@login_required
 def orders_page():
     """订单管理页"""
     return render_template('orders.html')
 
 @app.route('/statistics')
+@login_required
 def statistics_page():
     """销售统计页"""
     return render_template('statistics.html')
 
 @app.route('/ai-query')
+@login_required
 def ai_query_page():
     """智能问数页"""
     return render_template('ai_query.html')
 
 @app.route('/prediction')
+@login_required
 def prediction_page():
     """销量预测页"""
     return render_template('prediction.html')
 
 @app.route('/messages')
+@login_required
 def messages_page():
     """留言管理页"""
     return render_template('messages.html')
