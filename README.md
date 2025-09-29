@@ -141,7 +141,7 @@ product_sales_system/
 ├── pyproject.toml         # UV项目配置（包含所有依赖）
 ├── order_module.py        # 订单管理模块
 ├── statistics_module.py   # 销售统计模块
-├── ai_module.py          # AI功能模块（智能问数）
+├── ai_module.py          # AI功能模块（智能问数，销量预测）
 ├── ai_service.py         # AI服务模块（SiliconFlow API集成）
 ├── message_module.py     # 留言管理模块
 ├── database/
