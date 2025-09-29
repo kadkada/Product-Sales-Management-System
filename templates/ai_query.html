@@ -3,147 +3,152 @@
 {% block title %}智能问数 - 商品销售管理系统{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">智能问数</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearHistory()">
-                <i class="fas fa-trash me-1"></i>清空历史
-            </button>
+<div class="container-fluid">
+    <!-- 页面标题 -->
+    <div class="pt-3 pb-2 mb-3 border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                    <i class="fas fa-brain fa-lg"></i>
+                </div>
+            </div>
+            <div>
+                <h1 class="h2 text-primary mb-0">智能问数</h1>
+                <p class="text-muted mb-0">使用自然语言查询销售数据，AI智能解析您的需求</p>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <!-- 查询区域 -->
-    <div class="col-lg-8">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">智能查询</h6>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label for="queryInput" class="form-label">请输入您的问题</label>
-                    <textarea class="form-control" id="queryInput" rows="3" placeholder="例如：最近7天手机类商品的销售额是多少？"></textarea>
+    <div class="row">
+        <!-- 主查询区域 -->
+        <div class="col-lg-9">
+            <!-- 智能查询卡片 -->
+            <div class="card shadow-sm mb-4 border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-robot fa-2x me-3"></i>
+                        <div>
+                            <h5 class="mb-1">AI智能查询</h5>
+                            <small>用自然语言描述您的数据需求</small>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="queryInput" class="form-label text-white">请输入您的问题</label>
+                        <textarea class="form-control" id="queryInput" rows="3" 
+                                  placeholder="例如：最近7天手机类商品的销售额是多少？" 
+                                  style="background: rgba(255,255,255,0.9); border: none;"></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-light btn-lg" onclick="submitQuery()">
+                            <i class="fas fa-search me-2"></i>开始查询
+                        </button>
+                    </div>
                 </div>
-                <div class="d-grid">
-                    <button type="button" class="btn btn-primary" onclick="submitQuery()">
-                        <i class="fas fa-search me-2"></i>查询
-                    </button>
+            </div>
+            
+            <!-- 查询结果 -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white border-0">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-line me-2"></i>查询结果
+                    </h6>
+                </div>
+                <div class="card-body" id="queryResult">
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-robot fa-3x mb-3 text-primary"></i>
+                        <h5>等待您的查询</h5>
+                        <p>请输入问题开始智能分析</p>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <!-- 查询结果 -->
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">查询结果</h6>
-            </div>
-            <div class="card-body" id="queryResult">
-                <div class="text-center text-muted">
-                    <i class="fas fa-robot fa-3x mb-3"></i>
-                    <p>请输入问题开始查询</p>
+        <!-- 侧边栏 -->
+        <div class="col-lg-3">
+            <!-- 查询示例 -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white border-0">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-lightbulb me-2"></i>查询示例
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <button type="button" class="list-group-item list-group-item-action border-0" onclick="setQueryExample('最近7天的销售额是多少？')">
+                            <i class="fas fa-calendar-week me-2 text-primary"></i>最近7天的销售额是多少？
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action border-0" onclick="setQueryExample('本月手机类商品的销量是多少？')">
+                            <i class="fas fa-mobile-alt me-2 text-primary"></i>本月手机类商品的销量是多少？
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action border-0" onclick="setQueryExample('今天有多少个订单？')">
+                            <i class="fas fa-shopping-cart me-2 text-primary"></i>今天有多少个订单？
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action border-0" onclick="setQueryExample('最近3天有多少客户下单？')">
+                            <i class="fas fa-users me-2 text-primary"></i>最近3天有多少客户下单？
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action border-0" onclick="setQueryExample('2024年10月电子产品的销售额是多少？')">
+                            <i class="fas fa-laptop me-2 text-primary"></i>2024年10月电子产品的销售额是多少？
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <!-- 示例和帮助 -->
-    <div class="col-lg-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">查询示例</h6>
-            </div>
-            <div class="card-body">
-                <div class="list-group list-group-flush">
-                    <button type="button" class="list-group-item list-group-item-action" onclick="setQueryExample('最近7天的销售额是多少？')">
-                        <i class="fas fa-calendar-week me-2"></i>最近7天的销售额是多少？
-                    </button>
-                    <button type="button" class="list-group-item list-group-item-action" onclick="setQueryExample('本月手机类商品的销量是多少？')">
-                        <i class="fas fa-mobile-alt me-2"></i>本月手机类商品的销量是多少？
-                    </button>
-                    <button type="button" class="list-group-item list-group-item-action" onclick="setQueryExample('今天有多少个订单？')">
-                        <i class="fas fa-shopping-cart me-2"></i>今天有多少个订单？
-                    </button>
-                    <button type="button" class="list-group-item list-group-item-action" onclick="setQueryExample('最近3天有多少客户下单？')">
-                        <i class="fas fa-users me-2"></i>最近3天有多少客户下单？
-                    </button>
-                    <button type="button" class="list-group-item list-group-item-action" onclick="setQueryExample('2024年10月电子产品的销售额是多少？')">
-                        <i class="fas fa-laptop me-2"></i>2024年10月电子产品的销售额是多少？
-                    </button>
+            
+            <!-- 查询帮助 -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white border-0">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-question-circle me-2"></i>查询帮助
+                    </h6>
                 </div>
-            </div>
-        </div>
-        
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">查询帮助</h6>
-            </div>
-            <div class="card-body">
-                <h6>支持的时间表达：</h6>
-                <ul class="small">
-                    <li>今天、昨天</li>
-                    <li>最近X天（如：最近7天）</li>
-                    <li>本月、今年</li>
-                    <li>具体年月（如：2024年10月）</li>
-                </ul>
-                
-                <h6>支持的商品种类：</h6>
-                <ul class="small">
-                    <li>电子产品、手机、电脑</li>
-                    <li>服装鞋帽、男装、女装</li>
-                    <li>食品饮料</li>
-                    <li>其他已添加的商品种类</li>
-                </ul>
-                
-                <h6>支持的查询指标：</h6>
-                <ul class="small">
-                    <li>销售额、销售金额、营业额</li>
-                    <li>销量、销售量、数量</li>
-                    <li>订单数、订单量</li>
-                    <li>客户数、用户数</li>
-                </ul>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="fas fa-clock me-1"></i>时间表达
+                        </h6>
+                        <ul class="small text-muted mb-0">
+                            <li>今天、昨天</li>
+                            <li>最近X天（如：最近7天）</li>
+                            <li>本月、今年</li>
+                            <li>具体年月（如：2024年10月）</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="fas fa-tags me-1"></i>商品种类
+                        </h6>
+                        <ul class="small text-muted mb-0">
+                            <li>电子产品、手机、电脑</li>
+                            <li>服装鞋帽、男装、女装</li>
+                            <li>食品饮料</li>
+                            <li>其他已添加的商品种类</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-0">
+                        <h6 class="text-primary">
+                            <i class="fas fa-chart-bar me-1"></i>查询指标
+                        </h6>
+                        <ul class="small text-muted mb-0">
+                            <li>销售额、销售金额、营业额</li>
+                            <li>销量、销售量、数量</li>
+                            <li>订单数、订单量</li>
+                            <li>客户数、用户数</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 查询历史 -->
-<div class="row">
-    <div class="col-lg-12">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">查询历史</h6>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>查询问题</th>
-                                <th>查询结果</th>
-                                <th>查询时间</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="queryHistoryTable">
-                            <tr>
-                                <td colspan="4" class="text-center">暂无查询历史</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
-    loadQueryHistory();
+    // 页面初始化
 });
 
 // 设置查询示例
@@ -183,36 +188,124 @@ function submitQuery() {
 function displayQueryResult(data) {
     const resultDiv = document.getElementById('queryResult');
     
-    const result = data.result;
-    const category = result.category || '全部';
-    const timePeriod = result.time_period || '未知时间';
-    const metric = getMetricText(result.metric);
-    const value = formatValue(result.value, result.metric);
+    console.log('查询结果数据:', data); // 调试日志
+    
+    if (!data || !data.info_type || !data.data_value) {
+        resultDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i>查询失败</h5>
+                <p class="mb-0">无法获取查询结果，请重试</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const infoType = data.info_type;
+    const dataValue = data.data_value;
+    const explanation = data.explanation || '';
+    const aiEnhanced = data.ai_enhanced || false;
+    
+    // 格式化数值显示
+    const formattedValue = formatValue(dataValue, infoType);
+    
+    // AI解释区域
+    let aiExplanationDiv = '';
+    if (explanation) {
+        aiExplanationDiv = `
+            <div class="alert alert-info border-0 shadow-sm mb-4">
+                <div class="d-flex align-items-start">
+                    <i class="fas fa-robot fa-2x me-3 text-info"></i>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-2">
+                            <i class="fas fa-chart-line me-2"></i>AI智能分析
+                        </h6>
+                        <p class="mb-2 text-dark">${explanation}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>AI增强解析
+                            </small>
+                            <span class="badge bg-info">
+                                <i class="fas fa-check-circle me-1"></i>AI增强
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
     
     resultDiv.innerHTML = `
-        <div class="alert alert-success">
-            <h5><i class="fas fa-check-circle me-2"></i>查询成功</h5>
-            <p class="mb-0">${data.query_text}</p>
+        <div class="alert alert-success border-0 shadow-sm">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-check-circle fa-2x me-3 text-success"></i>
+                <div class="flex-grow-1">
+                    <h5 class="mb-1">
+                        <i class="fas fa-search me-2"></i>查询成功
+                    </h5>
+                    <p class="mb-0 text-muted">
+                        <i class="fas fa-quote-left me-1"></i>${data.query_text}
+                        <i class="fas fa-quote-right ms-1"></i>
+                    </p>
+                </div>
+                ${aiEnhanced ? '<span class="badge bg-primary"><i class="fas fa-robot me-1"></i>AI增强</span>' : ''}
+            </div>
         </div>
         
-        <div class="row">
+        ${aiExplanationDiv}
+        
+        <div class="row g-4">
             <div class="col-md-6">
-                <div class="card border-primary">
-                    <div class="card-body text-center">
-                        <h3 class="text-primary">${value}</h3>
-                        <p class="mb-0">${metric}</p>
+                <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="card-body text-white text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-chart-bar fa-3x opacity-75"></i>
+                        </div>
+                        <h2 class="mb-2 fw-bold">${formattedValue}</h2>
+                        <p class="mb-0 opacity-75 fs-5">${infoType}</p>
+                        <div class="mt-3">
+                            <span class="badge bg-light text-dark">
+                                <i class="fas fa-database me-1"></i>实时数据
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card border-info">
+                <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <h6>查询详情：</h6>
-                        <ul class="list-unstyled mb-0">
-                            <li><strong>时间范围：</strong>${timePeriod}</li>
-                            <li><strong>商品种类：</strong>${category}</li>
-                            <li><strong>查询指标：</strong>${metric}</li>
-                        </ul>
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-info-circle me-2"></i>查询详情
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-tag text-primary me-2"></i>
+                                    <small class="text-muted">查询类型</small>
+                                </div>
+                                <div class="fw-bold text-dark">${infoType}</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-hashtag text-primary me-2"></i>
+                                    <small class="text-muted">数据值</small>
+                                </div>
+                                <div class="fw-bold text-dark">${formattedValue}</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-robot text-success me-2"></i>
+                                    <small class="text-muted">AI解析</small>
+                                </div>
+                                <div class="fw-bold text-success">${aiEnhanced ? '已启用' : '未启用'}</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-clock text-info me-2"></i>
+                                    <small class="text-muted">查询时间</small>
+                                </div>
+                                <div class="fw-bold text-info">${new Date().toLocaleTimeString()}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -232,30 +325,17 @@ function getMetricText(metric) {
 }
 
 // 格式化数值
-function formatValue(value, metric) {
-    if (metric === 'sales') {
+function formatValue(value, infoType) {
+    if (infoType === '销售额' || infoType === '收入') {
         return '¥' + parseFloat(value).toFixed(2);
+    } else if (infoType === '商品种类') {
+        return value; // 商品种类直接显示
     } else {
         return parseInt(value).toLocaleString();
     }
 }
 
-// 加载查询历史
-function loadQueryHistory() {
-    // 这里可以添加加载查询历史的API调用
-    // 由于当前实现中没有查询历史API，这里显示一个提示
-    const tbody = document.getElementById('queryHistoryTable');
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">查询历史功能正在开发中...</td></tr>';
-}
 
-// 清空历史
-function clearHistory() {
-    if (confirm('确定要清空查询历史吗？')) {
-        // 这里可以添加清空历史的API调用
-        showMessage('历史记录已清空', 'success');
-        loadQueryHistory();
-    }
-}
 
 // 回车键提交查询
 document.getElementById('queryInput').addEventListener('keypress', function(e) {

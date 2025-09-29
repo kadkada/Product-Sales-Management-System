@@ -84,6 +84,8 @@
 - **Flask 2.3.3**: 轻量级Web框架
 - **PyMySQL**: MySQL数据库连接器
 - **Flask-CORS**: 跨域请求支持
+- **SiliconFlow API**: AI服务提供商，提供强大的自然语言处理能力
+- **requests**: HTTP客户端，用于调用AI API
 - **pandas**: 数据处理和分析
 - **numpy**: 数值计算，用于预测算法
 
@@ -122,12 +124,14 @@
 - **热销排行**: 商品销量排行榜
 - **实时数据**: 从数据库实时查询统计
 
-### 5. 智能问数模块
-- **自然语言解析**: 支持中文自然语言查询
-- **关键词提取**: 时间、商品种类、指标识别
-- **SQL生成**: 自动生成数据库查询语句
-- **查询示例**: 提供常见问题示例
-- **结果展示**: 结构化的查询结果展示
+### 5. AI智能问数模块
+- **AI服务集成**: 集成SiliconFlow API，提供强大的AI能力
+- **自然语言解析**: 支持中文自然语言查询，AI自动理解用户意图
+- **智能类型识别**: 自动识别查询类型（销售额/销量/订单数/客户数/商品种类）
+- **实时数据查询**: 直接查询数据库获取实际数据，确保结果准确性
+- **AI解释生成**: 基于查询结果生成专业的自然语言解释和分析
+- **查询示例**: 提供常见问题示例，帮助用户快速上手
+- **结果展示**: 结构化的查询结果展示，包含AI增强信息
 
 ### 6. 销量预测模块
 - **历史数据分析**: 基于近6个月销售数据
@@ -142,6 +146,360 @@
 - **状态管理**: 未回复/已回复状态跟踪
 - **内容过滤**: 防止SQL注入和XSS攻击
 - **统计展示**: 留言数量统计
+
+---
+
+## AI模块详解
+
+### 📋 概述
+
+本项目的AI模块集成了SiliconFlow API，提供强大的自然语言查询功能。用户可以使用自然语言查询销售数据，AI会自动解析查询意图，查询数据库获取实际数据，并生成专业的解释。
+
+### 🏗️ 模块架构
+
+#### 文件结构
+```
+├── ai_service.py          # AI服务核心模块
+├── ai_module.py           # AI功能接口模块
+└── templates/ai_query.html # 智能问数前端页面
+```
+
+#### 核心组件
+
+##### 1. AIService类 (ai_service.py)
+```python
+class AIService:
+    """AI服务类 - 集成SiliconFlow API"""
+    
+    def __init__(self):
+        self.api_url = "https://api.siliconflow.cn/v1/chat/completions"
+        self.api_key = "your-api-key"
+    
+    def enhance_query_parsing(self, query_text, database_context=None):
+        """AI增强查询解析"""
+        # 1. AI识别查询类型
+        # 2. 查询数据库获取实际数据
+        # 3. 生成自然语言解释
+        # 4. 返回结构化结果
+    
+    def generate_query_explanation(self, query_text, query_result):
+        """生成自然语言解释"""
+        # 基于查询结果生成专业解释
+```
+
+##### 2. 智能问数接口 (ai_module.py)
+```python
+def intelligent_query():
+    """智能问数接口"""
+    # 1. 接收用户查询
+    # 2. 调用AI服务解析
+    # 3. 记录查询日志
+    # 4. 返回查询结果
+```
+
+### 🚀 快速开始
+
+#### 1. 配置API密钥
+```python
+# 在 ai_service.py 中配置
+SILICONFLOW_API_KEY = "your-api-key-here"
+```
+
+#### 2. 配置数据库
+```bash
+# 导入数据库结构
+mysql -u root -p product_sales_system < database/schema.sql
+
+# （可选）导入示例数据
+mysql -u root -p product_sales_system < database/sample_data.sql
+```
+
+#### 3. 启动服务
+```bash
+python app.py
+```
+
+#### 4. 访问智能问数页面
+打开浏览器访问：`http://localhost:5000/ai-query`
+
+### 💡 使用示例
+
+#### 支持的查询类型
+
+##### 1. 销售额查询
+```
+用户输入: "销售额是多少"
+AI识别: 销售额
+数据库查询: SELECT SUM(total_amount) FROM orders WHERE status != 'cancelled'
+返回结果: ¥123,456.78
+AI解释: "根据您的查询，系统显示当前总销售额为¥123,456.78..."
+```
+
+##### 2. 销量查询
+```
+用户输入: "销量是多少"
+AI识别: 销量
+数据库查询: SELECT SUM(od.quantity) FROM order_detail od JOIN orders o ON od.order_id = o.order_id WHERE o.status != 'cancelled'
+返回结果: 1,234
+AI解释: "当前总销量为1,234件商品..."
+```
+
+##### 3. 订单数查询
+```
+用户输入: "有多少个订单"
+AI识别: 订单数
+数据库查询: SELECT COUNT(*) FROM orders WHERE status != 'cancelled'
+返回结果: 56
+AI解释: "系统显示当前有效订单总数为56个..."
+```
+
+##### 4. 客户数查询
+```
+用户输入: "有多少客户"
+AI识别: 客户数
+数据库查询: SELECT COUNT(DISTINCT user_id) FROM orders WHERE status != 'cancelled'
+返回结果: 23
+AI解释: "当前共有23位客户下单..."
+```
+
+##### 5. 商品种类查询
+```
+用户输入: "有哪些商品种类"
+AI识别: 商品种类
+数据库查询: SELECT category_name FROM category WHERE status = 1 LIMIT 10
+返回结果: 手机, 电脑, 电子产品
+AI解释: "系统显示当前有以下商品种类：手机、电脑、电子产品..."
+```
+
+### 🔧 API接口
+
+#### 智能问数接口
+```http
+POST /api/ai/query
+Content-Type: application/json
+
+{
+    "query_text": "销售额是多少"
+}
+```
+
+#### 响应格式
+```json
+{
+    "code": 1,
+    "msg": "查询成功",
+    "data": {
+        "query_text": "销售额是多少",
+        "info_type": "销售额",
+        "data_value": "123456.78",
+        "explanation": "AI生成的解释...",
+        "ai_enhanced": true
+    }
+}
+```
+
+### ⚙️ 配置说明
+
+#### SiliconFlow API配置
+网址：https://www.siliconflow.cn/
+```python
+# ai_service.py
+SILICONFLOW_API_URL = "https://api.siliconflow.cn/v1/chat/completions"
+SILICONFLOW_API_KEY = "your-api-key-here"
+
+# 支持的模型
+MODELS = [
+    "Qwen/QwQ-32B",      # 推荐模型，性能最佳
+    "Qwen/QwQ-14B",      # 备选模型，平衡性能
+    "Qwen/QwQ-7B"        # 轻量模型，快速响应
+]
+```
+
+#### 环境变量配置
+```bash
+# 设置API密钥
+export SILICONFLOW_API_KEY="your-api-key-here"
+
+# 设置API URL（可选）
+export SILICONFLOW_API_URL="https://api.siliconflow.cn/v1/chat/completions"
+```
+
+### 🛠️ 自定义配置
+
+#### 1. 添加新的查询类型
+```python
+# 在 ai_service.py 的 enhance_query_parsing 方法中添加
+sql_map = {
+    "销售额": "SELECT SUM(total_amount) AS value FROM orders WHERE status != 'cancelled'",
+    "销量": "SELECT SUM(od.quantity) AS value FROM order_detail od JOIN orders o ON od.order_id = o.order_id WHERE o.status != 'cancelled'",
+    # 添加新的查询类型
+    "平均订单金额": "SELECT AVG(total_amount) AS value FROM orders WHERE status != 'cancelled'",
+    "新查询类型": "YOUR_SQL_QUERY_HERE"
+}
+```
+
+#### 2. 自定义AI提示词
+```python
+# 修改 system_prompt 以支持更多查询类型
+system_prompt = """你是专业的销售数据分析助手。请根据用户问题识别他们想要查询的数据类型。
+只返回一个JSON：
+{"info": "销售额/销量/订单数/客户数/商品种类/平均订单金额/新查询类型"}"""
+```
+
+#### 3. 自定义解释模板
+```python
+# 在 generate_query_explanation 方法中修改提示词
+system_prompt = """你是专业的销售数据分析师。请基于用户问题和查询结果，生成简短的解释。
+要求：
+1. 数据总结：点明核心数据
+2. 业务分析：解释含义
+3. 专业建议：简短建议
+4. 自定义要求：添加您的特殊要求
+字数在80~120字之间。"""
+```
+
+### 🐛 故障排除
+
+#### 常见问题
+
+##### 1. API调用失败
+```
+错误: API调用失败: 401 - Unauthorized
+解决: 检查API密钥是否正确配置
+```
+
+##### 2. 查询解析失败
+```
+错误: AI未识别查询类型
+解决: 检查查询文本是否包含支持的关键词
+```
+
+##### 3. 数据库连接失败
+```
+错误: 数据库查询失败
+解决: 检查数据库连接配置和表结构
+```
+
+#### 调试模式
+```python
+# 在 ai_service.py 中启用调试日志
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+# 在关键位置添加日志
+print(f"AI响应: {ai_response}")
+print(f"解析结果: {parsed_result}")
+print(f"数据库查询结果: {data_value}")
+```
+
+### 📊 性能优化
+
+#### 1. API调用优化
+- 设置合理的超时时间（60秒）
+- 实现请求重试机制
+- 缓存常用查询结果
+
+#### 2. 数据库优化
+- 为常用查询字段添加索引
+- 限制查询结果数量
+- 使用连接池管理数据库连接
+
+#### 3. 前端优化
+- 实现查询防抖，避免频繁请求
+- 显示加载状态，提升用户体验
+- 优化结果展示，提高可读性
+
+### 🔒 安全考虑
+
+#### 1. API密钥安全
+- 不要在代码中硬编码API密钥
+- 使用环境变量存储敏感信息
+- 定期轮换API密钥
+
+#### 2. 输入验证
+- 验证用户输入长度和格式
+- 防止SQL注入攻击
+- 过滤恶意查询内容
+
+#### 3. 错误处理
+- 不暴露敏感错误信息
+- 记录详细日志用于调试
+- 实现优雅的错误降级
+
+### 📈 监控和日志
+
+#### 1. 查询日志
+```python
+# 在 ai_module.py 中记录查询日志
+cursor.execute(
+    "INSERT INTO query_log (user_id, query_text, query_result) VALUES (%s, %s, %s)",
+    (session.get('user_id'), query_text, str(ai_result))
+)
+```
+
+#### 2. 性能监控
+```python
+import time
+
+start_time = time.time()
+result = ai_service.enhance_query_parsing(query_text)
+end_time = time.time()
+
+print(f"查询耗时: {end_time - start_time:.2f}秒")
+```
+
+#### 3. 错误监控
+```python
+try:
+    result = ai_service.enhance_query_parsing(query_text)
+except Exception as e:
+    # 记录错误日志
+    logging.error(f"AI查询失败: {str(e)}")
+    # 发送告警通知
+    send_alert(f"AI服务异常: {str(e)}")
+```
+
+### 🚀 扩展功能
+
+#### 1. 多语言支持
+```python
+# 支持英文查询
+ENGLISH_KEYWORDS = {
+    "sales": "销售额",
+    "quantity": "销量",
+    "orders": "订单数",
+    "customers": "客户数"
+}
+```
+
+#### 2. 时间范围查询
+```python
+# 支持时间范围查询
+def parse_time_range(query_text):
+    if "今天" in query_text:
+        return "DATE(create_time) = CURDATE()"
+    elif "昨天" in query_text:
+        return "DATE(create_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)"
+    # 更多时间范围...
+```
+
+#### 3. 商品种类过滤
+```python
+# 支持特定商品种类查询
+def parse_category_filter(query_text):
+    categories = get_all_categories()
+    for category in categories:
+        if category['category_name'] in query_text:
+            return f"AND g.category_id = {category['category_id']}"
+    return ""
+```
+
+### 📚 参考资料
+
+- [SiliconFlow API文档](https://siliconflow.cn/docs)
+- [Flask官方文档](https://flask.palletsprojects.com/)
+- [PyMySQL文档](https://pymysql.readthedocs.io/)
+- [MySQL官方文档](https://dev.mysql.com/doc/)
 
 ---
 
@@ -173,6 +531,45 @@ query_log (log_id, user_id, query_text, query_result, query_time)
 -- 销量预测表
 sales_prediction (prediction_id, category_id, category_name, predicted_sales, demand_level, accuracy_rate, prediction_date, create_time)
 ```
+
+### 数据库文件说明
+
+#### 1. schema.sql - 数据库结构
+- 包含所有表的创建语句
+- 包含索引和外键约束
+- 不包含任何示例数据
+- 适合生产环境使用
+
+#### 2. sample_data.sql - 示例数据（可选）
+- 包含管理员账号（admin/admin123）
+- 包含商品种类和商品信息
+- 包含历史订单和销售数据
+- 适合测试和学习使用
+
+### 数据库初始化步骤
+
+#### 1. 仅创建表结构（生产环境推荐）
+```bash
+# 创建数据库
+mysql -u root -p -e "CREATE DATABASE product_sales_system DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 导入表结构
+mysql -u root -p product_sales_system < database/schema.sql
+```
+
+#### 2. 创建表结构 + 示例数据（开发/测试环境推荐）
+```bash
+# 创建数据库
+mysql -u root -p -e "CREATE DATABASE product_sales_system DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 导入表结构
+mysql -u root -p product_sales_system < database/schema.sql
+
+# 导入示例数据
+mysql -u root -p product_sales_system < database/sample_data.sql
+```
+
+> **注意**: 示例数据包含完整的测试数据，包括管理员账号、商品信息、历史订单等，适合快速体验系统功能。
 
 ### 表关系图
 ```
@@ -292,19 +689,9 @@ POST   /api/message/delete
 
 ## 部署指南
 
-### 系统要求
 
-#### 最低配置
-- **CPU**: 1核心
-- **内存**: 1GB RAM
-- **存储**: 10GB 可用空间
-- **操作系统**: Windows 10/11, Ubuntu 18.04+, CentOS 7+
 
-#### 推荐配置
-- **CPU**: 2核心
-- **内存**: 2GB RAM
-- **存储**: 20GB 可用空间
-- **操作系统**: Ubuntu 20.04 LTS
+
 
 ### 环境准备
 
@@ -385,50 +772,6 @@ uv run python start.py
 python run.py
 ```
 
-### 生产环境部署
-
-#### 1. 使用Gunicorn部署
-```bash
-# 安装Gunicorn
-uv pip install gunicorn
-
-# 启动服务
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
-```
-
-#### 2. 使用Nginx反向代理
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-    
-    location / {
-        proxy_pass http://127.0.0.1:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-#### 3. 使用systemd管理服务
-```ini
-[Unit]
-Description=Product Sales Management System
-After=network.target
-
-[Service]
-User=www-data
-Group=www-data
-WorkingDirectory=/path/to/your/project
-Environment=PATH=/path/to/your/project/.venv/bin
-ExecStart=/path/to/your/project/.venv/bin/gunicorn -w 4 -b 127.0.0.1:5000 app:app
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
 
 ---
 
@@ -468,12 +811,14 @@ WantedBy=multi-user.target
 - **热销排行**: 商品销量排行榜
 - **实时数据**: 从数据库实时查询统计
 
-#### ✅ 6. 智能问数模块
-- **自然语言解析**: 支持中文自然语言查询
-- **关键词提取**: 时间、商品种类、指标识别
-- **SQL生成**: 自动生成数据库查询语句
-- **查询示例**: 提供常见问题示例
-- **结果展示**: 结构化的查询结果展示
+#### ✅ 6. AI智能问数模块
+- **AI服务集成**: 集成SiliconFlow API，提供强大的AI能力
+- **自然语言解析**: 支持中文自然语言查询，AI自动理解用户意图
+- **智能类型识别**: 自动识别查询类型（销售额/销量/订单数/客户数/商品种类）
+- **实时数据查询**: 直接查询数据库获取实际数据，确保结果准确性
+- **AI解释生成**: 基于查询结果生成专业的自然语言解释和分析
+- **查询示例**: 提供常见问题示例，帮助用户快速上手
+- **结果展示**: 结构化的查询结果展示，包含AI增强信息
 
 #### ✅ 7. 销量预测模块
 - **历史数据分析**: 基于近6个月销售数据
@@ -577,7 +922,8 @@ WantedBy=multi-user.target
 
 #### 主要成就
 - ✅ 完成8个核心功能模块
-- ✅ 实现智能问数和销量预测
+- ✅ 集成SiliconFlow AI服务，实现智能问数功能
+- ✅ 实现AI增强的自然语言查询和解释生成
 - ✅ 提供完整的前后端解决方案
 - ✅ 支持生产环境部署
 - ✅ 提供详细的文档和部署指南
@@ -585,8 +931,9 @@ WantedBy=multi-user.target
 #### 技术价值
 - 展示了Python Web开发的最佳实践
 - 提供了完整的项目架构设计
-- 实现了实用的AI功能应用
+- 实现了实用的AI功能应用，集成SiliconFlow API
 - 建立了标准化的开发流程
+- 展示了AI与传统业务系统的完美结合
 
 这个项目不仅是一个实用的销售管理系统，更是一个优秀的技术学习案例，为开发者提供了宝贵的经验和参考。
 

@@ -4,7 +4,10 @@
 
 {% block content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">销量预测</h1>
+    <div>
+        <h1 class="h2 mb-0">销量预测</h1>
+        <p class="text-muted mb-0">AI智能预测未来销售趋势</p>
+    </div>
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group me-2">
             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshPrediction()">
@@ -21,10 +24,12 @@
 
 <!-- 预测说明 -->
 <div class="alert alert-info">
-    <h5><i class="fas fa-info-circle me-2"></i>预测说明</h5>
+    <h5><i class="fas fa-robot me-2"></i>AI智能预测说明</h5>
     <p class="mb-0">
-        系统将基于近6个月的历史销售数据，使用移动平均算法预测未来1个月各商品种类的销量趋势。
-        预测结果包括销量预测值和需求等级（高/中/低），帮助您更好地制定采购和销售策略。
+        系统采用AI智能分析技术，基于近6个月的历史销售数据、市场趋势和季节性因素，
+        使用先进的机器学习算法预测未来1个月各商品种类的销量趋势。
+        预测结果包括销量预测值、需求等级（高/中/低）、置信度和AI分析理由，
+        帮助您更准确地制定采购和销售策略。
     </p>
 </div>
 
@@ -47,12 +52,13 @@
                                 <th>预测销量</th>
                                 <th>需求等级</th>
                                 <th>增长率</th>
+                                <th>预测方式</th>
                                 <th>预测时间</th>
                             </tr>
                         </thead>
                         <tbody id="predictionTableBody">
                             <tr>
-                                <td colspan="5" class="text-center">暂无预测数据，请点击"开始预测"按钮</td>
+                                <td colspan="6" class="text-center">暂无预测数据，请点击"开始预测"按钮</td>
                             </tr>
                         </tbody>
                     </table>
@@ -189,7 +195,7 @@ function displayPredictionResults(predictions) {
     const tbody = document.getElementById('predictionTableBody');
     
     if (predictions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">暂无预测数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">暂无预测数据</td></tr>';
         return;
     }
     
@@ -199,7 +205,14 @@ function displayPredictionResults(predictions) {
             <td><span class="badge bg-primary">${pred.predicted_sales}</span></td>
             <td><span class="badge bg-${getDemandLevelColor(pred.demand_level)}">${getDemandLevelText(pred.demand_level)}</span></td>
             <td>${pred.growth_rate ? pred.growth_rate.toFixed(1) + '%' : '-'}</td>
-            <td>${new Date().toLocaleString()}</td>
+            <td>
+                ${pred.ai_enhanced ? 
+                    '<span class="badge bg-success"><i class="fas fa-robot me-1"></i>AI预测</span>' : 
+                    '<span class="badge bg-secondary">传统预测</span>'
+                }
+                ${pred.confidence ? `<br><small class="text-muted">置信度: ${(pred.confidence * 100).toFixed(1)}%</small>` : ''}
+            </td>
+            <td>${new Date().toLocaleString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'})}</td>
         </tr>
     `).join('');
 }
@@ -257,11 +270,11 @@ function displayPredictionHistory(history) {
     
     tbody.innerHTML = history.map(item => `
         <tr>
-            <td>${item.prediction_date}</td>
+            <td>${new Date(item.prediction_date).toLocaleDateString('zh-CN', {year: 'numeric', month: 'numeric', day: 'numeric'})}</td>
             <td>${item.category_name}</td>
             <td><span class="badge bg-primary">${item.predicted_sales}</span></td>
             <td><span class="badge bg-${getDemandLevelColor(item.demand_level)}">${getDemandLevelText(item.demand_level)}</span></td>
-            <td>${new Date(item.create_time).toLocaleString()}</td>
+            <td>${new Date(item.create_time).toLocaleString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'})}</td>
         </tr>
     `).join('');
 }

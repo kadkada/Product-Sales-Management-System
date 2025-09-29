@@ -54,7 +54,13 @@ CREATE DATABASE product_sales_system DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_uni
 mysql -u root -p product_sales_system < database/schema.sql
 ```
 
-3. 修改数据库配置（编辑 `app.py`）：
+3. （可选）导入示例数据：
+```bash
+mysql -u root -p product_sales_system < database/sample_data.sql
+```
+> **注意**: 示例数据包含管理员账号（admin/admin123）、商品种类、商品信息和历史订单数据，适合测试和学习使用。
+
+4. 修改数据库配置（编辑 `app.py`）：
 ```python
 DB_CONFIG = {
     'host': 'localhost',
@@ -106,9 +112,11 @@ python start.py
 - 热销商品排行
 
 ### 🤖 智能功能
-- 自然语言查询销售数据
-- 基于历史数据的销量预测
-- 需求等级评估
+- **AI智能问数** - 集成SiliconFlow API，支持自然语言查询销售数据
+- **智能解析** - AI自动识别查询类型（销售额/销量/订单数/客户数/商品种类）
+- **实时查询** - 直接查询数据库获取实际数据，提供准确结果
+- **自然语言解释** - AI生成专业的查询结果解释和分析
+- **销量预测** - 基于历史数据的智能预测，提供需求等级评估
 
 ### 👥 用户管理
 - 多角色权限控制
@@ -121,6 +129,7 @@ python start.py
 - **前端**: HTML5 + CSS3 + JavaScript + Bootstrap 5
 - **数据库**: MySQL 8.0
 - **图表**: Chart.js
+- **AI服务**: SiliconFlow API, requests
 - **其他**: PyMySQL, pandas, numpy
 
 ## 📁 项目结构
@@ -132,10 +141,12 @@ product_sales_system/
 ├── pyproject.toml         # UV项目配置（包含所有依赖）
 ├── order_module.py        # 订单管理模块
 ├── statistics_module.py   # 销售统计模块
-├── ai_module.py          # AI功能模块
+├── ai_module.py          # AI功能模块（智能问数）
+├── ai_service.py         # AI服务模块（SiliconFlow API集成）
 ├── message_module.py     # 留言管理模块
 ├── database/
-│   └── schema.sql        # 数据库结构（包含示例数据）
+│   ├── schema.sql        # 数据库结构
+│   └── sample_data.sql  # 示例数据（可选）
 ├── templates/            # HTML模板
 │   ├── base.html         # 基础模板
 │   ├── login.html        # 登录页面

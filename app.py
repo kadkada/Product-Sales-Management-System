@@ -51,6 +51,21 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# 统一API错误处理，避免返回HTML导致前端JSON解析失败
+@app.errorhandler(500)
+def handle_internal_server_error(e):
+    if request.path.startswith('/api/'):
+        return jsonify({"code": 0, "msg": "服务器内部错误", "detail": str(e)}), 500
+    # 非API请求仍返回默认错误页面
+    return render_template('base.html'), 500
+
+@app.errorhandler(Exception)
+def handle_unexpected_exception(e):
+    if request.path.startswith('/api/'):
+        return jsonify({"code": 0, "msg": "请求处理异常", "detail": str(e)}), 500
+    # 让Flask默认处理或简单回退
+    return render_template('base.html'), 500
+
 # 用户管理模块
 @app.route('/api/user/login', methods=['POST'])
 def user_login():
@@ -364,6 +379,12 @@ def api_sales_prediction():
 def api_get_prediction_history():
     from ai_module import get_prediction_history
     return get_prediction_history()
+
+@app.route('/api/ai/query-history', methods=['GET'])
+@login_required
+def api_get_query_history():
+    from ai_module import get_query_history
+    return get_query_history()
 
 # 留言管理路由
 @app.route('/api/message/submit', methods=['POST'])
